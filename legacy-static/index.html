@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kasir Minimarket</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="app-shell">
+    <section class="pos-screen">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="square-button" type="button" aria-label="Kembali">&#8249;</button>
+          <button class="square-button" type="button" aria-label="Menu">&#8862;</button>
+        </div>
+        <div class="brand-mark">Kasir Pintar</div>
+        <button id="open-admin-button" class="square-button muted" type="button" aria-label="Admin">&#9881;</button>
+      </header>
+
+      <section class="search-panel">
+        <div class="search-box">
+          <span class="search-icon">&#9906;</span>
+          <input id="search-input" type="search" placeholder="Cari nama atau SKU produk...">
+        </div>
+        <button id="scan-button" class="scan-button" type="button">
+          <span>Scan barcode</span>
+        </button>
+        <button id="focus-search-button" class="scan-icon" type="button" aria-label="Scanner">&#9098;</button>
+      </section>
+
+      <nav id="category-tabs" class="category-tabs" aria-label="Kategori produk"></nav>
+
+      <section class="product-area">
+        <div class="section-title">
+          <div>
+            <p class="eyebrow">Daftar Produk</p>
+            <h1>Katalog kasir sentuh</h1>
+          </div>
+          <div class="status-pill">
+            <span id="visible-count">0</span>
+            <span>produk tampil</span>
+          </div>
+        </div>
+
+        <div id="product-grid" class="product-grid"></div>
+      </section>
+    </section>
+
+    <aside class="cart-panel">
+      <div class="cart-header">
+        <div>
+          <p class="eyebrow">Struk Aktif</p>
+          <h2>Belanja pelanggan</h2>
+        </div>
+        <button id="clear-cart" class="outline-button" type="button">Reset</button>
+      </div>
+
+      <div class="meta-grid">
+        <label>
+          <span>Nama toko</span>
+          <input id="store-name" type="text" value="Maju Jaya Mart">
+        </label>
+        <label>
+          <span>Kasir</span>
+          <input id="cashier-name" type="text" value="Rani">
+        </label>
+      </div>
+
+      <div id="cart-items" class="cart-items"></div>
+
+      <div class="payment-box">
+        <label>
+          <span>Diskon</span>
+          <input id="discount-input" type="number" min="0" step="100" value="0">
+        </label>
+        <label>
+          <span>Metode bayar</span>
+          <select id="payment-method">
+            <option value="Tunai">Tunai</option>
+            <option value="QRIS">QRIS</option>
+            <option value="Kartu Debit">Kartu Debit</option>
+            <option value="Kartu Kredit">Kartu Kredit</option>
+          </select>
+        </label>
+        <label>
+          <span>Bayar</span>
+          <input id="amount-paid-input" type="number" min="0" step="100" value="50000">
+        </label>
+        <label>
+          <span>Nomor member</span>
+          <input id="member-code-input" type="text" placeholder="Opsional">
+        </label>
+      </div>
+
+      <div id="status-banner" class="status-banner" aria-live="polite"></div>
+
+      <div class="summary-box">
+        <div class="summary-row">
+          <span>Subtotal</span>
+          <strong id="subtotal-value">Rp 0</strong>
+        </div>
+        <div class="summary-row">
+          <span>Diskon</span>
+          <strong id="discount-value">Rp 0</strong>
+        </div>
+        <div class="summary-row total">
+          <span>Total</span>
+          <strong id="total-value">Rp 0</strong>
+        </div>
+        <div class="summary-row">
+          <span>Kembalian</span>
+          <strong id="change-value">Rp 0</strong>
+        </div>
+      </div>
+
+      <div class="cart-actions">
+        <button id="checkout-button" class="secondary-button" type="button">Simpan transaksi</button>
+        <button id="print-button" class="primary-button" type="button">Cetak struk</button>
+      </div>
+
+      <section class="history-panel">
+        <div class="stats-grid">
+          <article class="stat-card">
+            <span>Transaksi hari ini</span>
+            <strong id="today-transaction-count">0</strong>
+          </article>
+          <article class="stat-card">
+            <span>Omzet hari ini</span>
+            <strong id="today-revenue-value">Rp 0</strong>
+          </article>
+        </div>
+        <div class="history-header">
+          <h3>Histori transaksi</h3>
+          <div class="history-tools">
+            <button id="export-transactions-button" class="outline-button" type="button">Export JSON</button>
+            <label class="outline-button file-button">
+              <input id="import-transactions-file" type="file" accept="application/json">
+              Import JSON
+            </label>
+            <button id="clear-history-button" class="outline-button" type="button">Hapus histori</button>
+          </div>
+        </div>
+        <div id="history-list" class="history-list"></div>
+      </section>
+
+      <div id="receipt-preview" class="receipt-preview" aria-live="polite"></div>
+    </aside>
+  </main>
+
+  <template id="product-card-template">
+    <article class="product-card">
+      <button class="product-button" type="button">
+        <div class="product-visual"></div>
+        <div class="product-info">
+          <h3 class="product-name"></h3>
+          <p class="product-size"></p>
+          <div class="product-meta">
+            <strong class="product-price"></strong>
+            <span class="product-stock"></span>
+          </div>
+          <div class="product-tags">
+            <span class="product-sku"></span>
+            <span class="stock-badge"></span>
+          </div>
+        </div>
+      </button>
+    </article>
+  </template>
+
+  <div id="checkout-modal" class="modal-overlay" hidden>
+    <div class="checkout-modal" role="dialog" aria-modal="true" aria-labelledby="checkout-title">
+      <div class="modal-header">
+        <div>
+          <p class="eyebrow">Konfirmasi Pembayaran</p>
+          <h3 id="checkout-title">Selesaikan transaksi</h3>
+        </div>
+        <button id="close-modal-button" class="outline-button" type="button">Tutup</button>
+      </div>
+
+      <div id="checkout-summary" class="checkout-summary"></div>
+
+      <div class="modal-actions">
+        <button id="confirm-checkout-button" class="primary-button" type="button">Konfirmasi & simpan</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="admin-modal" class="modal-overlay" hidden>
+    <div class="admin-modal" role="dialog" aria-modal="true" aria-labelledby="admin-title">
+      <div class="modal-header">
+        <div>
+          <p class="eyebrow">Admin Produk</p>
+          <h3 id="admin-title">Kelola katalog menu</h3>
+        </div>
+        <button id="close-admin-button" class="outline-button" type="button">Tutup</button>
+      </div>
+
+      <div class="admin-layout">
+        <section class="admin-list-panel">
+          <div class="admin-list-header">
+            <strong>Daftar produk</strong>
+            <div class="admin-tools">
+              <button id="export-products-button" class="outline-button" type="button">Export JSON</button>
+              <label class="outline-button file-button">
+                <input id="import-products-file" type="file" accept="application/json">
+                Import JSON
+              </label>
+              <button id="reset-products-button" class="outline-button" type="button">Reset katalog</button>
+            </div>
+          </div>
+          <div id="admin-product-list" class="admin-product-list"></div>
+        </section>
+
+        <section class="admin-form-panel">
+          <div class="admin-form-header">
+            <strong id="admin-form-title">Tambah produk</strong>
+            <button id="new-product-button" class="secondary-button" type="button">Produk baru</button>
+          </div>
+
+          <form id="admin-product-form" class="admin-product-form">
+            <label>
+              <span>Nama produk</span>
+              <input id="admin-name" type="text" required>
+            </label>
+            <label>
+              <span>SKU / barcode</span>
+              <input id="admin-sku" type="text" required>
+            </label>
+            <label>
+              <span>Kategori</span>
+              <input id="admin-category" type="text" required>
+            </label>
+            <label>
+              <span>Ukuran</span>
+              <input id="admin-size" type="text" required>
+            </label>
+            <label>
+              <span>Harga</span>
+              <input id="admin-price" type="number" min="0" step="100" required>
+            </label>
+            <label>
+              <span>Stok</span>
+              <input id="admin-stock" type="number" min="0" step="1" required>
+            </label>
+            <label>
+              <span>Teks ikon</span>
+              <input id="admin-icon" type="text" maxlength="8" placeholder="Contoh: TEH">
+            </label>
+            <label>
+              <span>URL gambar produk</span>
+              <input id="admin-image" type="url" placeholder="https://...">
+            </label>
+            <label class="admin-image-upload">
+              <span>Upload gambar lokal</span>
+              <input id="admin-image-file" type="file" accept="image/*">
+            </label>
+            <div class="admin-image-preview-wrap">
+              <span>Preview visual</span>
+              <div id="admin-image-preview" class="admin-image-preview">Belum ada gambar</div>
+            </div>
+            <div class="admin-actions">
+              <button id="delete-product-button" class="outline-button danger-outline" type="button">Hapus</button>
+              <button class="primary-button" type="submit">Simpan produk</button>
+            </div>
+          </form>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
