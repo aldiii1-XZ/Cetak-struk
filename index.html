@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kasir Minimarket</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="app-shell">
+    <section class="pos-screen">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="square-button" type="button" aria-label="Kembali">&#8249;</button>
+          <button class="square-button" type="button" aria-label="Menu">&#8862;</button>
+        </div>
+        <div class="brand-mark">Kasir Pintar</div>
+        <button class="square-button muted" type="button" aria-label="Akun">&#8962;</button>
+      </header>
+
+      <section class="search-panel">
+        <div class="search-box">
+          <span class="search-icon">&#9906;</span>
+          <input id="search-input" type="search" placeholder="Cari nama atau SKU produk...">
+        </div>
+        <button class="scan-button" type="button">
+          <span>Scan barcode</span>
+        </button>
+        <button class="scan-icon" type="button" aria-label="Scanner">&#9098;</button>
+      </section>
+
+      <nav id="category-tabs" class="category-tabs" aria-label="Kategori produk"></nav>
+
+      <section class="product-area">
+        <div class="section-title">
+          <div>
+            <p class="eyebrow">Daftar Produk</p>
+            <h1>Katalog kasir sentuh</h1>
+          </div>
+          <div class="status-pill">
+            <span id="visible-count">0</span>
+            <span>produk tampil</span>
+          </div>
+        </div>
+
+        <div id="product-grid" class="product-grid"></div>
+      </section>
+    </section>
+
+    <aside class="cart-panel">
+      <div class="cart-header">
+        <div>
+          <p class="eyebrow">Struk Aktif</p>
+          <h2>Belanja pelanggan</h2>
+        </div>
+        <button id="clear-cart" class="outline-button" type="button">Reset</button>
+      </div>
+
+      <div class="meta-grid">
+        <label>
+          <span>Nama toko</span>
+          <input id="store-name" type="text" value="Maju Jaya Mart">
+        </label>
+        <label>
+          <span>Kasir</span>
+          <input id="cashier-name" type="text" value="Rani">
+        </label>
+      </div>
+
+      <div id="cart-items" class="cart-items"></div>
+
+      <div class="payment-box">
+        <label>
+          <span>Diskon</span>
+          <input id="discount-input" type="number" min="0" step="100" value="0">
+        </label>
+        <label>
+          <span>Bayar</span>
+          <input id="amount-paid-input" type="number" min="0" step="100" value="50000">
+        </label>
+      </div>
+
+      <div class="summary-box">
+        <div class="summary-row">
+          <span>Subtotal</span>
+          <strong id="subtotal-value">Rp 0</strong>
+        </div>
+        <div class="summary-row">
+          <span>Diskon</span>
+          <strong id="discount-value">Rp 0</strong>
+        </div>
+        <div class="summary-row total">
+          <span>Total</span>
+          <strong id="total-value">Rp 0</strong>
+        </div>
+        <div class="summary-row">
+          <span>Kembalian</span>
+          <strong id="change-value">Rp 0</strong>
+        </div>
+      </div>
+
+      <div class="cart-actions">
+        <button id="print-button" class="primary-button" type="button">Cetak struk</button>
+      </div>
+
+      <div id="receipt-preview" class="receipt-preview" aria-live="polite"></div>
+    </aside>
+  </main>
+
+  <template id="product-card-template">
+    <article class="product-card">
+      <button class="product-button" type="button">
+        <div class="product-visual"></div>
+        <div class="product-info">
+          <h3 class="product-name"></h3>
+          <p class="product-size"></p>
+          <div class="product-meta">
+            <strong class="product-price"></strong>
+            <span class="product-stock"></span>
+          </div>
+        </div>
+      </button>
+    </article>
+  </template>
+
+  <script src="app.js"></script>
+</body>
+</html>
