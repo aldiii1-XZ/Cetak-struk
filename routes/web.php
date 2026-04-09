@@ -12,8 +12,4 @@ Route::controller(PosController::class)->prefix('pos')->name('pos.')->group(func
     Route::post('cart/clear', 'clearCart');
     Route::post('checkout', 'completeTransaction');
     Route::get('cart', 'cart');
-}); 
-
-Route::get('/legacy', function () {
-    return view('legacy');
-})->name('legacy');
+});

@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', function () {
     let toastTimer = null;
     let currentCart = {};
     let paymentMethod = 'Tunai';
+    let lastFocusedElement = null;
 
     const searchInput = document.getElementById('searchInput');
     const clearSearchButton = document.getElementById('clearSearch');
@@ -18,6 +19,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const cartBadge = document.querySelector('.cart-count');
     const checkoutButton = document.getElementById('checkoutButton');
     const checkoutNote = document.getElementById('checkoutNote');
+    const checkoutStateHeadline = document.getElementById('checkoutStateHeadline');
+    const clearCartButton = document.getElementById('clearCartButton');
     const historyList = document.getElementById('historyList');
     const toast = document.getElementById('toast');
     const sidebarPaymentBadge = document.querySelector('.cart-status .pill.primary');
@@ -58,6 +61,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function formatItemLabel(totalItems) {
         return `${totalItems} item`;
+    }
+
+    function syncQuickAmountButtons(amount) {
+        quickAmountButtons.forEach(function (button) {
+            button.classList.toggle('active', Number(button.dataset.amount) === amount);
+        });
     }
 
     function getCartMetrics(cart) {
@@ -209,8 +218,8 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!history.length) {
             historyList.innerHTML = `
                 <div class="empty-cart">
-                    <strong>Histori sudah direset</strong>
-                    Belum ada transaksi terbaru yang ditampilkan.
+                    <strong>Belum ada histori sesi</strong>
+                    Selesaikan pembayaran pertama untuk mulai membangun histori transaksi.
                 </div>
             `;
             return;
@@ -221,7 +230,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 <div class="history-item">
                     <div>
                         <strong>${item.code}</strong>
-                        <small>${item.time} - ${item.payment}</small>
+                        <small>${item.time} - ${item.payment}${item.item_count ? ` - ${formatItemLabel(item.item_count)}` : ''}</small>
                     </div>
                     <strong>${item.total}</strong>
                 </div>
@@ -239,18 +248,20 @@ document.addEventListener('DOMContentLoaded', function () {
         article.className = `product-card${isOutOfStock ? ' is-disabled' : ''}`;
         article.innerHTML = `
             <div class="visual" style="background: linear-gradient(135deg, ${product.accent[0]}, ${product.accent[1]});">
-                ${product.icon}
+                <span class="nav-badge">${product.category}</span>
+                <strong class="visual-mark">${product.icon}</strong>
             </div>
-            <div>
-                <div class="muted-row">
-                    <span class="nav-badge">${product.category}</span>
-                    <span>${product.size}</span>
+            <div class="product-copy">
+                <div class="product-head">
+                    <div>
+                        <h3>${product.name}</h3>
+                        <p class="subtle">${product.size}</p>
+                    </div>
+                    <strong>${product.price}</strong>
                 </div>
-                <h3>${product.name}</h3>
-            </div>
-            <div class="stock-line ${stockClass}">
-                <span>${stockLabel}</span>
-                <strong>${product.price}</strong>
+                <div class="stock-line ${stockClass}">
+                    <span>${stockLabel}</span>
+                </div>
             </div>
             <div class="price-row">
                 <p class="subtle">${isOutOfStock ? 'Restok produk untuk menjual kembali.' : 'Tap sekali untuk tambah ke keranjang.'}</p>
@@ -306,6 +317,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function renderSidebarCart(metrics) {
         cartBadge.textContent = metrics.totalItems;
+        if (clearCartButton) {
+            clearCartButton.hidden = metrics.items.length === 0;
+        }
 
         if (!metrics.items.length) {
             receiptItems.innerHTML = `
@@ -314,6 +328,9 @@ document.addEventListener('DOMContentLoaded', function () {
                     Tambahkan produk dari katalog untuk mulai transaksi baru.
                 </div>
             `;
+            if (checkoutStateHeadline) {
+                checkoutStateHeadline.textContent = 'Menunggu item pertama';
+            }
             checkoutButton.disabled = true;
             checkoutNote.textContent = 'Pilih minimal satu produk untuk mengaktifkan pembayaran.';
             return;
@@ -323,11 +340,14 @@ document.addEventListener('DOMContentLoaded', function () {
             return `
                 <div class="receipt-item">
                     <div class="receipt-item-head">
-                        <strong>${item.name}</strong>
+                        <div>
+                            <strong>${item.name}</strong>
+                            <p class="subtle">${formatCurrency(item.price)} / item</p>
+                        </div>
                         <strong>${formatCurrency(item.subtotal)}</strong>
                     </div>
                     <div class="receipt-item-controls">
-                        <span class="muted-row">${formatCurrency(item.price)} / item</span>
+                        <span class="muted-row">Atur jumlah tanpa kembali ke katalog.</span>
                         <div class="qty-control">
                             <button type="button" class="qty-button remove" data-action="remove-item" data-id="${item.id}">x</button>
                             <button type="button" class="qty-button" data-action="decrease-qty" data-id="${item.id}">-</button>
@@ -339,6 +359,9 @@ document.addEventListener('DOMContentLoaded', function () {
             `;
         }).join('');
 
+        if (checkoutStateHeadline) {
+            checkoutStateHeadline.textContent = `${formatItemLabel(metrics.totalItems)} siap ditinjau`;
+        }
         checkoutButton.disabled = false;
         checkoutNote.textContent = 'Setelah pilihan menu selesai, lanjutkan ke pembayaran.';
     }
@@ -357,13 +380,13 @@ document.addEventListener('DOMContentLoaded', function () {
         paymentOrderList.innerHTML = metrics.items.map(function (item) {
             return `
                 <div class="payment-order-item">
-                    <div style="display:grid; gap:8px; width:100%;">
+                    <div class="payment-order-stack">
                         <div class="payment-order-meta">
                             <div>
-                                <strong style="color: var(--text); display:block;">${item.name}</strong>
+                                <strong class="payment-order-title">${item.name}</strong>
                                 <span>${formatCurrency(item.price)} / item</span>
                             </div>
-                            <strong style="color: var(--text);">${formatCurrency(item.subtotal)}</strong>
+                            <strong class="payment-order-total">${formatCurrency(item.subtotal)}</strong>
                         </div>
                         <div class="payment-order-footer">
                             <span class="subtle">Jumlah dapat diubah langsung di sini.</span>
@@ -455,6 +478,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (paymentMethod === 'QRIS') {
             setPaymentAmountValue(metrics.total);
         }
+        syncQuickAmountButtons(parseCurrencyInput(paymentAmountInput.value));
 
         if (!metrics.items.length) {
             paymentStatusLabel.textContent = 'Keranjang kosong';
@@ -577,9 +601,13 @@ document.addEventListener('DOMContentLoaded', function () {
             paymentMethodButtons.forEach(function (button) {
                 button.classList.toggle('active', button.dataset.method === 'Tunai');
             });
+            setPaymentAmountValue(0);
+            syncQuickAmountButtons(0);
             renderCart(data.cart, data.total_items);
+            showToast('Transaksi aktif dikosongkan.');
         } catch (error) {
             console.error('Error clearing cart:', error);
+            showToast('Transaksi aktif belum berhasil dikosongkan.');
         }
     }
 
@@ -643,19 +671,37 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
+        lastFocusedElement = document.activeElement;
         paymentModal.classList.add('show');
         paymentModal.setAttribute('aria-hidden', 'false');
+        document.body.classList.add('modal-open');
 
         if (paymentMethod === 'Tunai') {
             setPaymentAmountValue(getPaymentMetrics().total);
         }
 
         updatePaymentSummary();
+        window.setTimeout(function () {
+            if (paymentMethod === 'Tunai') {
+                paymentAmountInput.focus();
+                paymentAmountInput.select();
+                return;
+            }
+
+            discountInput.focus();
+        }, 40);
     }
 
     function closePaymentModal() {
         paymentModal.classList.remove('show');
         paymentModal.setAttribute('aria-hidden', 'true');
+        document.body.classList.remove('modal-open');
+
+        if (lastFocusedElement && typeof lastFocusedElement.focus === 'function') {
+            lastFocusedElement.focus();
+        }
+
+        lastFocusedElement = null;
     }
 
     function printReceipt(transactionData = null) {
@@ -759,6 +805,20 @@ document.addEventListener('DOMContentLoaded', function () {
         searchInput.focus();
     });
 
+    if (clearCartButton) {
+        clearCartButton.addEventListener('click', function () {
+            if (!Object.keys(currentCart).length) {
+                return;
+            }
+
+            if (!window.confirm('Kosongkan transaksi aktif sekarang?')) {
+                return;
+            }
+
+            clearCart();
+        });
+    }
+
     categoryChips.forEach(function (chip) {
         chip.addEventListener('click', function () {
             categoryChips.forEach(function (currentChip) {
@@ -861,9 +921,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const amount = parseCurrencyInput(this.value);
         setPaymentAmountValue(amount);
-        quickAmountButtons.forEach(function (button) {
-            button.classList.toggle('active', Number(button.dataset.amount) === amount);
-        });
+        syncQuickAmountButtons(amount);
         updatePaymentSummary();
     });
 
@@ -883,8 +941,28 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     document.addEventListener('keydown', function (event) {
+        const activeElement = document.activeElement;
+        const isTypingField = activeElement && (
+            activeElement.tagName === 'INPUT' ||
+            activeElement.tagName === 'TEXTAREA' ||
+            activeElement.tagName === 'SELECT' ||
+            activeElement.isContentEditable
+        );
+
+        if (event.key === '/' && !isTypingField && !paymentModal.classList.contains('show')) {
+            event.preventDefault();
+            searchInput.focus();
+            searchInput.select();
+            return;
+        }
+
         if (event.key === 'Escape' && paymentModal.classList.contains('show')) {
             closePaymentModal();
+        }
+
+        if ((event.ctrlKey || event.metaKey) && event.key === 'Enter' && paymentModal.classList.contains('show') && !completePaymentButton.disabled) {
+            event.preventDefault();
+            completePaymentButton.click();
         }
     });
 
@@ -894,6 +972,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
     completePaymentButton.addEventListener('click', async function () {
         const metrics = getPaymentMetrics();
+        const originalLabel = completePaymentButton.textContent;
+
+        completePaymentButton.disabled = true;
+        completePaymentButton.textContent = 'Memproses...';
 
         try {
             const response = await fetch('/pos/checkout', {
@@ -931,6 +1013,9 @@ document.addEventListener('DOMContentLoaded', function () {
         } catch (error) {
             console.error('Error completing transaction:', error);
             showToast(error.message || 'Transaksi belum berhasil diselesaikan.');
+            updatePaymentSummary();
+        } finally {
+            completePaymentButton.textContent = originalLabel;
         }
     });
 

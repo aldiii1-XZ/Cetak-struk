@@ -1,12 +1,12 @@
 # Cetak Struk Laravel POS
 
-Aplikasi kasir minimarket berbasis Laravel yang sedang dikembangkan dari versi statis ke versi web app yang lebih kompleks.
+Aplikasi kasir minimarket berbasis Laravel dengan dashboard POS modern berbasis Blade.
 
 ## Status saat ini
 
 - Laravel sudah dipasang di root project
-- Halaman utama `/` menampilkan desain dashboard POS berbasis Blade
-- Versi UI statis lama masih disimpan di folder `legacy-static`
+- Halaman utama `/` menampilkan dashboard POS utama
+- Katalog, keranjang, checkout, histori transaksi, dan preview struk sudah aktif di alur POS
 
 ## Menjalankan project
 
@@ -31,13 +31,13 @@ php artisan serve
 ## Route utama
 
 - `/` untuk dashboard POS Laravel
-- `/legacy` untuk halaman penunjuk ke arsip UI statis lama
 
 ## Struktur penting
 
 - `resources/views/pos.blade.php` untuk desain POS utama Laravel
+- `resources/js/pos.js` untuk interaksi katalog, keranjang, dan pembayaran
+- `resources/css/app.css` untuk styling dashboard POS
 - `routes/web.php` untuk route aplikasi
-- `legacy-static/` untuk file HTML, CSS, dan JS versi sebelumnya
 
 ## Google Cloud
 
@@ -111,6 +111,6 @@ Atau jalankan deploy dari PowerShell lokal:
 
 ## Langkah berikutnya
 
-- Migrasi data produk ke database dan migration Laravel
-- Tambah controller, model, dan autentikasi admin/kasir
-- Pindahkan interaksi POS dari JS statis ke Blade + controller/API Laravel
+- Tambah autentikasi admin/kasir
+- Simpan histori transaksi ke database permanen
+- Tambah modul laporan, manajemen produk, dan pengaturan toko
